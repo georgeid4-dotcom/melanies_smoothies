@@ -44,8 +44,15 @@ if ingredients_list:
 
         st.success('Your Smoothie is ordered!', icon="✅")
     
-    import requests  
-    smoothiefroot_response = requests.get("[https://my.smoothiefroot.com/api/fruit/watermelon](https://my.smoothiefroot.com/api/fruit/watermelon)")  
-    #st.text(smoothiefroot_response)
+ import requests
+
+    # Llamada correcta a la API
+    smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+
+    # Mostrar el texto de la respuesta
+    st.text(smoothiefroot_response.text)
+
+    # Si la API devuelve JSON, mejor usar:
+    st.json(smoothiefroot_response.json())
     sf_df = st.dataframe(data=smoothiefroot_response.json(), use_contaner_width=True)
 
