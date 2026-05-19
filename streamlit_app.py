@@ -54,5 +54,5 @@ if ingredients_list:
 
     # Si la API devuelve JSON, mejor usar:
     st.json(smoothiefroot_response.json())
-    sf_df = st.dataframe(data=smoothiefroot_response.json(), use_contaner_width=True)
+ 
 
