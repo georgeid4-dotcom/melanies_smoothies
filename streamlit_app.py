@@ -27,9 +27,6 @@ pd_df = my_dataframe.to_pandas()
 # Mostrar el DataFrame para verificar los datos
 st.dataframe(pd_df, use_container_width=True)
 
-# Pausar ejecución para revisar esta parte (puedes quitarlo después)
-st.stop()
-
 # Selección de ingredientes usando FRUIT_NAME
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
@@ -42,12 +39,15 @@ if ingredients_list:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
 
+        # Obtener el valor SEARCH_ON correspondiente a la fruta elegida
+        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
+        st.write('The search value for', fruit_chosen, 'is', search_on, '.')
+
         # Mostrar subtítulo con el nombre de la fruta
         st.subheader(fruit_chosen + ' Nutrition Information')
 
-        # Usar SEARCH_ON para la llamada a la API
-        search_value = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_value.lower())
+        # Llamada a la API usando SEARCH_ON
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on.lower())
 
         # Mostrar los datos nutricionales
         sf_df = pd.DataFrame([smoothiefroot_response.json()])
