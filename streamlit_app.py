@@ -1,6 +1,7 @@
 # Import python packages
 import streamlit as st
 import requests
+import pandas as pd
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -14,7 +15,7 @@ st.write("The Name on your Smoothie will be:", name_on_order)
 cnx = st.connection("snowflake")
 session = cnx.session()
 
-# Mostrar opciones de frutas
+# Mostrar opciones de frutas desde Snowflake
 my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
 st.dataframe(data=my_dataframe, use_container_width=True)
 
@@ -41,5 +42,10 @@ if ingredients_list:
 
         # Llamada a la API externa
         smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-        st.json(smoothiefroot_response.json())
+
+        # Convertir JSON en DataFrame
+        sf_df = pd.DataFrame([smoothiefroot_response.json()])
+
+        # Mostrar el DataFrame en Streamlit
+        st.dataframe(sf_df, use_container_width=True)
 
