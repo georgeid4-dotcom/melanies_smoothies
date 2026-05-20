@@ -15,11 +15,19 @@ st.write("The Name on your Smoothie will be:", name_on_order)
 cnx = st.connection("snowflake")
 session = cnx.session()
 
-# Mostrar opciones de frutas desde Snowflake
-my_dataframe = session.table("smoothies.public.fruit_options").select(col('FRUIT_NAME'))
+# Mostrar opciones de frutas con la nueva columna SEARCH_ON
+my_dataframe = session.table("smoothies.public.fruit_options").select(
+    col('FRUIT_NAME'),
+    col('SEARCH_ON')
+)
+
+# Ver el contenido del DataFrame para confirmar
 st.dataframe(data=my_dataframe, use_container_width=True)
 
-# Selección de ingredientes
+# Pausar ejecución para revisar esta parte (puedes quitarlo después)
+st.stop()
+
+# Selección de ingredientes usando FRUIT_NAME
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
     my_dataframe.to_pandas()['FRUIT_NAME'].tolist(),
@@ -34,10 +42,11 @@ if ingredients_list:
         # Mostrar subtítulo con el nombre de la fruta
         st.subheader(fruit_chosen + ' Nutrition Information')
 
-        # Llamada a la API usando la variable fruit_chosen
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruit_chosen.lower())
+        # Usar SEARCH_ON para la llamada a la API
+        search_value = my_dataframe.filter(col('FRUIT_NAME') == fruit_chosen).to_pandas()['SEARCH_ON'].iloc[0]
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_value.lower())
 
-        # Mostrar los datos nutricionales en un DataFrame
+        # Mostrar los datos nutricionales
         sf_df = pd.DataFrame([smoothiefroot_response.json()])
         st.dataframe(sf_df, use_container_width=True)
 
@@ -51,4 +60,3 @@ if ingredients_list:
         """
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
-
