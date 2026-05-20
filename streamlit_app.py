@@ -40,12 +40,8 @@ if ingredients_list:
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
 
-        # Llamada a la API externa
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
-
-        # Convertir JSON en DataFrame
-        sf_df = pd.DataFrame([smoothiefroot_response.json()])
-
-        # Mostrar el DataFrame en Streamlit
-        st.dataframe(sf_df, use_container_width=True)
-
+        # Obtener datos nutricionales de SmoothieFroot para la fruta elegida
+        for fruit_chosen in ingredients_list:
+            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen.lower()}")
+            sf_df = pd.DataFrame([smoothiefroot_response.json()])
+            st.dataframe(sf_df, use_container_width=True)
