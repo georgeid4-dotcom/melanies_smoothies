@@ -39,19 +39,26 @@ if ingredients_list:
     for fruit_chosen in ingredients_list:
         ingredients_string += fruit_chosen + ' '
 
-        # Obtener el valor SEARCH_ON correspondiente a la fruta elegida
-        search_on = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON'].iloc[0]
-        st.write('The search value for', fruit_chosen, 'is', search_on, '.')
+        # Verificar si existe un valor SEARCH_ON para la fruta elegida
+        search_values = pd_df.loc[pd_df['FRUIT_NAME'] == fruit_chosen, 'SEARCH_ON']
 
-        # Mostrar subtítulo con el nombre de la fruta
-        st.subheader(fruit_chosen + ' Nutrition Information')
+        if not search_values.empty and pd.notna(search_values.iloc[0]):
+            search_on = search_values.iloc[0]
+            st.write('The search value for', fruit_chosen, 'is', search_on, '.')
 
-        # Llamada a la API usando SEARCH_ON
-        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on.lower())
+            # Mostrar subtítulo con el nombre de la fruta
+            st.subheader(fruit_chosen + ' Nutrition Information')
 
-        # Mostrar los datos nutricionales
-        sf_df = pd.DataFrame([smoothiefroot_response.json()])
-        st.dataframe(sf_df, use_container_width=True)
+            # Llamada a la API usando SEARCH_ON
+            try:
+                smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + search_on.lower())
+                smoothiefroot_response.raise_for_status()  # lanza error si la respuesta no es 200
+                sf_df = pd.DataFrame([smoothiefroot_response.json()])
+                st.dataframe(sf_df, use_container_width=True)
+            except Exception as e:
+                st.warning(f"Could not retrieve data for {fruit_chosen}: {e}")
+        else:
+            st.error(f"No SEARCH_ON value found for {fruit_chosen}. Please check your table.")
 
     # Botón para insertar el pedido
     time_to_insert = st.button('Submit Order')
