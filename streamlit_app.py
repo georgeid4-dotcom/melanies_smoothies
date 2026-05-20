@@ -26,22 +26,29 @@ ingredients_list = st.multiselect(
     max_selections=5
 )
 
-time_to_insert = False
-
 if ingredients_list:
-    ingredients_string = " ".join(ingredients_list)
+    ingredients_string = ''
+    for fruit_chosen in ingredients_list:
+        ingredients_string += fruit_chosen + ' '
+
+        # Mostrar subtítulo con el nombre de la fruta
+        st.subheader(fruit_chosen + ' Nutrition Information')
+
+        # Llamada a la API usando la variable fruit_chosen
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/" + fruit_chosen.lower())
+
+        # Mostrar los datos nutricionales en un DataFrame
+        sf_df = pd.DataFrame([smoothiefroot_response.json()])
+        st.dataframe(sf_df, use_container_width=True)
+
+    # Botón para insertar el pedido
     time_to_insert = st.button('Submit Order')
 
     if time_to_insert:
         my_insert_stmt = f"""
             INSERT INTO smoothies.public.orders(ingredients, name_on_order)
-            VALUES ('{ingredients_string}', '{name_on_order}')
+            VALUES ('{ingredients_string.strip()}', '{name_on_order}')
         """
         session.sql(my_insert_stmt).collect()
         st.success('Your Smoothie is ordered!', icon="✅")
 
-        # Obtener datos nutricionales de SmoothieFroot para la fruta elegida
-        for fruit_chosen in ingredients_list:
-            smoothiefroot_response = requests.get(f"https://my.smoothiefroot.com/api/fruit/{fruit_chosen.lower()}")
-            sf_df = pd.DataFrame([smoothiefroot_response.json()])
-            st.dataframe(sf_df, use_container_width=True)
