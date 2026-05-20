@@ -1,5 +1,6 @@
 # Import python packages
 import streamlit as st
+import requests
 from snowflake.snowpark.functions import col
 
 # Write directly to the app
@@ -20,34 +21,25 @@ st.dataframe(data=my_dataframe, use_container_width=True)
 # Selección de ingredientes
 ingredients_list = st.multiselect(
     'Choose up to 5 ingredients:',
-    my_dataframe.to_pandas()['FRUIT_NAME'].tolist(),  # convertir a lista de strings
+    my_dataframe.to_pandas()['FRUIT_NAME'].tolist(),
     max_selections=5
 )
 
-# Inicializar variable
 time_to_insert = False
 
 if ingredients_list:
-    # Construir string de ingredientes
     ingredients_string = " ".join(ingredients_list)
-
-    # Botón para insertar
     time_to_insert = st.button('Submit Order')
 
     if time_to_insert:
-        # Ejecutar el INSERT en Snowflake
         my_insert_stmt = f"""
             INSERT INTO smoothies.public.orders(ingredients, name_on_order)
             VALUES ('{ingredients_string}', '{name_on_order}')
         """
         session.sql(my_insert_stmt).collect()
-
         st.success('Your Smoothie is ordered!', icon="✅")
-         import requests  
-        smoothiefroot_response = requests.get("[https://my.smoothiefroot.com/api/fruit/watermelon](https://my.smoothiefroot.com/api/fruit/watermelon)")  
-        #st.text(smoothiefroot_response)
-        sf_df = st.dataframe(data=smoothiefroot_response.json(), use_contaner_width=True)
-    
 
- 
+        # Llamada a la API externa
+        smoothiefroot_response = requests.get("https://my.smoothiefroot.com/api/fruit/watermelon")
+        st.json(smoothiefroot_response.json())
 
