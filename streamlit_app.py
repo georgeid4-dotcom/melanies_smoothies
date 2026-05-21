@@ -66,7 +66,8 @@ if ingredients_list:
                 else:
                     sf_df = pd.DataFrame([data])
 
-                st.dataframe(sf_df, use_container_width=True)
+                # ✅ Mostrar el DataFrame sin índice numérico
+                st.dataframe(sf_df, use_container_width=True, hide_index=True)
 
             except requests.exceptions.HTTPError as e:
                 if smoothiefroot_response.status_code == 404:
@@ -86,3 +87,4 @@ if ingredients_list:
         """
         session.sql(my_insert_stmt).collect()
         st.success(f"Your Smoothie with {ingredients_string} is ordered!", icon="✅")
+
