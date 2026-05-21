@@ -30,7 +30,6 @@ ingredients_list = st.multiselect(
 )
 
 if ingredients_list:
-    # Formato limpio con comas
     ingredients_string = ', '.join(ingredients_list)
 
     for fruit_chosen in ingredients_list:
@@ -41,14 +40,34 @@ if ingredients_list:
             st.subheader(f"{fruit_chosen} Nutrition Information")
 
             try:
-                # Llamada directa al dominio real
+                # Llamada a la API
                 smoothiefroot_response = requests.get(
                     f"https://my.smoothiefroot.com/api/fruit/{search_on.lower()}",
                     timeout=5
                 )
                 smoothiefroot_response.raise_for_status()
-                sf_df = pd.DataFrame([smoothiefroot_response.json()])
+                data = smoothiefroot_response.json()
+
+                # ✅ Transformar el JSON de 'nutrition' en filas separadas
+                if isinstance(data.get("nutrition"), dict):
+                    nutrition_data = data["nutrition"]
+                    sf_df = pd.DataFrame([
+                        {
+                            "nutrient": k,
+                            "value": v,
+                            "family": data.get("family"),
+                            "genus": data.get("genus"),
+                            "id": data.get("id"),
+                            "name": data.get("name"),
+                            "order": data.get("order")
+                        }
+                        for k, v in nutrition_data.items()
+                    ])
+                else:
+                    sf_df = pd.DataFrame([data])
+
                 st.dataframe(sf_df, use_container_width=True)
+
             except requests.exceptions.HTTPError as e:
                 if smoothiefroot_response.status_code == 404:
                     st.warning(f"No nutrition data found for {fruit_chosen}, but it will still be added to your order.")
@@ -67,3 +86,4 @@ if ingredients_list:
         """
         session.sql(my_insert_stmt).collect()
         st.success(f"Your Smoothie with {ingredients_string} is ordered!", icon="✅")
+
