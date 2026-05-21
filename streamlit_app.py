@@ -40,7 +40,7 @@ if ingredients_list:
             st.subheader(f"{fruit_chosen} Nutrition Information")
 
             try:
-                # Llamada a la API
+                # Llamada directa al dominio real
                 smoothiefroot_response = requests.get(
                     f"https://my.smoothiefroot.com/api/fruit/{search_on.lower()}",
                     timeout=5
@@ -48,20 +48,20 @@ if ingredients_list:
                 smoothiefroot_response.raise_for_status()
                 data = smoothiefroot_response.json()
 
-                # ✅ Transformar el JSON de 'nutrition' en filas separadas
+                # ✅ Transformar el JSON de 'nutrition' en filas separadas (sin valores numéricos)
                 if isinstance(data.get("nutrition"), dict):
                     nutrition_data = data["nutrition"]
                     sf_df = pd.DataFrame([
                         {
                             "nutrient": k,
-                            "value": v,
                             "family": data.get("family"),
                             "genus": data.get("genus"),
                             "id": data.get("id"),
                             "name": data.get("name"),
                             "order": data.get("order")
                         }
-                        for k, v in nutrition_data.items()
+                        for k in ["carbs", "fat", "protein", "sugar"]  # orden fijo
+                        if k in nutrition_data
                     ])
                 else:
                     sf_df = pd.DataFrame([data])
@@ -86,4 +86,3 @@ if ingredients_list:
         """
         session.sql(my_insert_stmt).collect()
         st.success(f"Your Smoothie with {ingredients_string} is ordered!", icon="✅")
-
